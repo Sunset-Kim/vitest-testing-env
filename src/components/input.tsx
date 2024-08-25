@@ -1,37 +1,42 @@
-import { PropsWithRef, useId } from "react";
+import { ComponentPropsWithoutRef, forwardRef, useId } from "react";
 
-interface TextFieldProps extends PropsWithRef<JSX.IntrinsicElements["input"]> {
+interface TextFieldProps extends ComponentPropsWithoutRef<"input"> {
   label?: string;
   error?: string;
-  errorMessage?: string;
   descriptionMessage?: string;
 }
 
-export function TextField(props: TextFieldProps) {
-  const componentId = useId();
-  const errorId = `${componentId}-error`;
-  const descriptionId = `${componentId}-description`;
+export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
+  ({ label, error, descriptionMessage, ...props }: TextFieldProps, ref) => {
+    const componentId = useId();
+    const errorId = `${componentId}-error`;
+    const descriptionId = `${componentId}-description`;
 
-  return (
-    <div>
-      {props.label && <label htmlFor={componentId}>{props.label}</label>}
-      <input
-        {...props}
-        id={componentId}
-        aria-describedby={props.error ? errorId : descriptionId}
-        aria-errormessage={errorId}
-        aria-invalid={Boolean(props.error)}
-      />
+    return (
       <div>
-        {props.error && (
-          <div id={errorId} role="alert">
-            {props.errorMessage}
-          </div>
-        )}
-        {!props.error && props.descriptionMessage && (
-          <div id={descriptionId}>{props.descriptionMessage}</div>
-        )}
+        {label && <label htmlFor={componentId}>{label}</label>}
+        <input
+          {...props}
+          id={componentId}
+          aria-describedby={error ? errorId : descriptionId}
+          aria-invalid={Boolean(error)}
+          aria-description={descriptionMessage}
+          aria-errormessage={error}
+          ref={ref}
+        />
+        <div>
+          {error && (
+            <div id={errorId} role="alert">
+              {error}
+            </div>
+          )}
+          {!error && descriptionMessage && (
+            <div id={descriptionId}>{descriptionMessage}</div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+);
+
+TextField.displayName = "TextField";
